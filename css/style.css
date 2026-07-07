@@ -1,0 +1,265 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html,
+body {
+  width: 100%;
+  height: 100%;
+  background: #1a1410;
+  overflow: hidden;
+  font-family: "Courier New", monospace;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+#game-container {
+  position: relative;
+  width: 1280px;
+  height: 720px;
+  margin: 0 auto;
+  background: #000;
+  overflow: hidden;
+  /* Lets any child use cqw/cqh units so buttons/menus scale exactly with
+     the container's actual rendered size, on any screen. */
+  container-type: size;
+  container-name: game;
+}
+
+@media (max-width: 1280px) {
+  #game-container {
+    width: 100vw;
+    height: 56.25vw;
+    max-height: 100vh;
+    max-width: 177.78vh; /* keeps it from overflowing on short/portrait screens */
+  }
+}
+
+canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+  image-rendering: pixelated;
+  background: #c98c2e;
+}
+
+#hud {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  right: 10px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  color: #f5e3b3;
+  text-shadow: 2px 2px 0 #000;
+  font-size: 18px;
+  letter-spacing: 1px;
+  pointer-events: none;
+}
+
+#hud-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  pointer-events: all;
+}
+
+#restart-btn {
+  pointer-events: all;
+  background: #3a2c1a;
+  border: 2px solid #f5e3b3;
+  color: #f5e3b3;
+  font-size: 20px;
+  width: 36px;
+  height: 36px;
+  cursor: pointer;
+  border-radius: 4px;
+}
+
+#restart-btn:hover {
+  background: #55421f;
+}
+
+#controls-hint {
+  position: absolute;
+  bottom: 8px;
+  left: 0;
+  right: 0;
+  text-align: center;
+  color: #f5e3b3aa;
+  font-size: 13px;
+  text-shadow: 1px 1px 0 #000;
+  pointer-events: none;
+}
+
+#overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(10, 7, 4, 0.88);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+}
+
+#overlay.hidden {
+  display: none;
+}
+
+/* Title screen only: swap the plain dark overlay for the drawn title art.
+   titlebg.png already contains the "TACTIC / TITLE PAGE" lettering, so
+   game.js hides the dynamic <h1> while this class is active. */
+#overlay.title-bg {
+  background-image: url("../assets/images/titlebg.png");
+  background-size: cover;
+  background-position: center;
+  background-color: transparent;
+}
+
+#overlay-box {
+  text-align: center;
+  color: #f5e3b3;
+  max-width: min(640px, 90cqw);
+  width: 100%;
+  padding: clamp(10px, 3cqw, 40px);
+  box-sizing: border-box;
+}
+
+#overlay-box h1 {
+  font-size: clamp(20px, 5cqw, 48px);
+  letter-spacing: 6px;
+  margin-bottom: clamp(8px, 2cqh, 20px);
+  color: #e8c25f;
+  text-shadow: 3px 3px 0 #000;
+}
+
+#overlay-box p {
+  font-size: clamp(11px, 2cqw, 18px);
+  line-height: 1.6;
+  margin-bottom: clamp(10px, 3cqh, 28px);
+  white-space: pre-line;
+}
+
+/* Shared "play"-style button look, reused by the level-select Back
+   button so both read as the same UI element. Sized in clamp()/cq units
+   so it scales down instead of overflowing on small screens. */
+.menu-btn {
+  background: WhiteSmoke;
+  border: 5px solid #4b2a29;
+  color: #1a1410;
+  font-family: "Courier New", monospace;
+  font-weight: bold;
+  font-size: clamp(12px, 2.2cqw, 18px);
+  padding: clamp(8px, 1.6cqw, 12px) clamp(16px, 4cqw, 32px);
+  cursor: pointer;
+  letter-spacing: 2px;
+  border-radius: 4px;
+  max-width: 90cqw;
+}
+
+.menu-btn:hover {
+  background: #f5d57a;
+}
+
+#overlay-btn {
+  /* On the title screen this sits over the "press play" spot baked into
+     titlebg.png, which is roughly half way down the frame — kept
+     relative (cqh) instead of a fixed 350px so it stays lined up (and
+     on-screen) at any container size. */
+  margin-top: clamp(24px, 45cqh, 350px);
+}
+
+/* ------------------------------------------------------------
+   Level Select screen
+   ------------------------------------------------------------ */
+
+#level-select-overlay {
+  position: absolute;
+  inset: 0;
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  color: #f5e3b3;
+  font-family: "Courier New", monospace;
+  background-image: url("../assets/images/levelselectbg.png");
+  background-size: cover;
+  background-position: center;
+  box-sizing: border-box;
+  padding: 2cqh 2cqw;
+}
+
+#level-select-overlay h1 {
+  font-size: clamp(18px, 4.5cqw, 42px);
+  letter-spacing: 4px;
+  margin-bottom: clamp(10px, 3cqh, 24px);
+  color: #e8c25f;
+  text-shadow: 3px 3px 0 #000;
+}
+
+#level-select-grid {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  grid-template-rows: repeat(5, minmax(0, 1fr));
+  gap: clamp(4px, 1.2cqw, 12px);
+  width: min(80cqw, 640px);
+  max-width: 94cqw;
+  margin-bottom: clamp(12px, 3cqh, 28px);
+}
+
+/* Every stage cell is levelbox.png itself — the button element is sized
+   to the image's native aspect ratio, so the clickable hitbox matches
+   the drawn image exactly at any screen size. */
+.level-stage-btn {
+  position: relative;
+  aspect-ratio: 71 / 52;
+  width: 100%;
+  border: none;
+  padding: 0;
+  background-image: url("../assets/images/levelbox.png");
+  background-size: 100% 100%;
+  background-repeat: no-repeat;
+  background-color: transparent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #3a2c1a;
+  font-weight: bold;
+  font-size: clamp(8px, 1.3cqw, 15px);
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.35);
+  cursor: pointer;
+  transition:
+    transform 0.1s ease,
+    filter 0.1s ease;
+}
+
+.level-stage-btn.unlocked {
+  filter: drop-shadow(0 0 4px rgba(255, 255, 255, 0.55));
+}
+
+.level-stage-btn.unlocked:hover {
+  transform: scale(1.07);
+  filter: drop-shadow(0 0 7px rgba(255, 255, 255, 0.85));
+}
+
+.level-stage-btn.completed {
+  filter: drop-shadow(0 0 6px #e8b830) drop-shadow(0 0 2px #e8b830);
+  color: #4b3a12;
+}
+
+.level-stage-btn.locked {
+  filter: grayscale(1) brightness(0.6);
+  cursor: not-allowed;
+}
+
+.level-stage-btn:disabled {
+  cursor: not-allowed;
+}
